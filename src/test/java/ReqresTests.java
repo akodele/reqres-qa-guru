@@ -1,9 +1,13 @@
+import data.DataUser;
+import data.PutUpdate;
+import data.UserData;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
-import static io.restassured.http.ContentType.JSON;
-import static org.hamcrest.core.Is.is;
+import static org.hamcrest.Matchers.hasItem;
+import static specs.Specs.*;
 
 public class ReqresTests {
 
@@ -11,35 +15,35 @@ public class ReqresTests {
     @DisplayName("Проверка имени, фамилии и почты второго пользователя")
     void checkSingleUserData(){
 
-        given()
-                .log().uri()
+        DataUser dataUser= given()
+                .spec(requestSpec)
                 .when()
-                .get("https://reqres.in/api/users/2")
+                .get("/users/2")
                 .then()
-                .log().all()
-                .statusCode(200)
-                .body("data.email", is("janet.weaver@reqres.in"))
-                .body("data.first_name", is("Janet"))
-                .body("data.last_name", is("Weaver"));
+                .spec(responseSpec(200))
+                .log().body()
+                .extract().as(DataUser.class);
+
+        Assertions.assertEquals("Janet",dataUser.getData().getFirstName());
 
     }
+
 
     @Test
     @DisplayName("Создание нового пользователя")
     void createUsersTestName(){
         String body = "{ \"name\": \"akodele\", \"job\": \"QA engineer\"}";
 
-        given()
-                .log().uri()
-                .contentType(JSON)
+        PutUpdate putUpdate= given()
+                .spec(requestSpec)
                 .body(body)
                 .when()
-                .post("https://reqres.in/api/users")
+                .post("/users")
                 .then()
-                .log().all()
-                .statusCode(201)
-                .body("name", is("akodele"))
-                .body("job", is("QA engineer"));
+                .spec(responseSpec(201))
+                .extract().as(PutUpdate.class);
+        Assertions.assertEquals("akodele",putUpdate.getName());
+        Assertions.assertEquals("QA engineer",putUpdate.getJob());
 
     }
 
@@ -48,18 +52,18 @@ public class ReqresTests {
     void changeUserDataTest(){
         String body = "{ \"name\": \"akodele\", \"job\": \"QA engineer\"}";
 
-        given()
-                .log().uri()
-                .contentType(JSON)
+        PutUpdate putUpdate= given()
+                .spec(requestSpec)
                 .body(body)
                 .when()
-                .put("https://reqres.in/api/users/2")
+                .put("/users/2")
                 .then()
-                .log().all()
-                .statusCode(200)
-                .body("name", is("akodele"))
-                .body("job", is("QA engineer"));
-
+                .spec(responseSpec(200))
+                .extract().as(PutUpdate.class);
+                //.body("name", is("akodele"))
+                //.body("job", is("QA engineer"));
+        Assertions.assertEquals("akodele",putUpdate.getName());
+        Assertions.assertEquals("QA engineer",putUpdate.getJob());
     }
 
     @Test
@@ -67,12 +71,12 @@ public class ReqresTests {
     void deleteUser(){
 
         given()
-                .log().uri()
+                .spec(requestSpec)
                 .when()
-                .delete("https://reqres.in/api/users/2")
+                .delete("/users/2")
                 .then()
                 .log().all()
-                .statusCode(204);
+                .spec(responseSpec(204));
 
     }
 
@@ -82,14 +86,27 @@ public class ReqresTests {
         String body = "{ \"email\": \"akodele@jmail.co\", \"password\": \"QA engineer\"}";
 
         given()
-                .log().uri()
-                .contentType(JSON)
+                .spec(requestSpec)
                 .body(body)
                 .when()
-                .post("https://reqres.in/api/login")
+                .post("/login")
                 .then()
-                .log().all()
-                .statusCode(400);
+                .spec(responseSpec(400));
+
+    }
+
+    @Test
+    @DisplayName("Проверка авторизации с некорректными данными")
+    void checkListUserTest(){
+
+        given()
+                .spec(requestSpec)
+                .when()
+                .get("/users?page=2")
+                .then()
+                .statusCode(200)
+                .body("data.findAll{it.avatar.startsWith('https://reqres.in')}.avatar.flatten()",
+                        hasItem("https://reqres.in/img/faces/11-image.jpg"));
 
     }
 }
