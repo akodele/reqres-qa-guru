@@ -1,4 +1,4 @@
-package data;
+package reqres.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,7 +6,7 @@ import lombok.*;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UserData {
+public class UserModel {
 
     private Integer id;
     private String email;

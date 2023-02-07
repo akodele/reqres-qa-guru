@@ -1,13 +1,14 @@
-import data.DataUser;
-import data.PutUpdate;
-import data.UserData;
+package reqres;
+
+import reqres.models.DataUserModel;
+import reqres.models.NameJobModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.hasItem;
-import static specs.Specs.*;
+import static reqres.specs.Specs.*;
 
 public class ReqresTests {
 
@@ -15,14 +16,14 @@ public class ReqresTests {
     @DisplayName("Проверка имени, фамилии и почты второго пользователя")
     void checkSingleUserData(){
 
-        DataUser dataUser= given()
+        DataUserModel dataUser= given()
                 .spec(requestSpec)
                 .when()
                 .get("/users/2")
                 .then()
                 .spec(responseSpec(200))
                 .log().body()
-                .extract().as(DataUser.class);
+                .extract().as(DataUserModel.class);
 
         Assertions.assertEquals("Janet",dataUser.getData().getFirstName());
 
@@ -34,14 +35,14 @@ public class ReqresTests {
     void createUsersTestName(){
         String body = "{ \"name\": \"akodele\", \"job\": \"QA engineer\"}";
 
-        PutUpdate putUpdate= given()
+        NameJobModel putUpdate= given()
                 .spec(requestSpec)
                 .body(body)
                 .when()
                 .post("/users")
                 .then()
                 .spec(responseSpec(201))
-                .extract().as(PutUpdate.class);
+                .extract().as(NameJobModel.class);
         Assertions.assertEquals("akodele",putUpdate.getName());
         Assertions.assertEquals("QA engineer",putUpdate.getJob());
 
@@ -52,14 +53,14 @@ public class ReqresTests {
     void changeUserDataTest(){
         String body = "{ \"name\": \"akodele\", \"job\": \"QA engineer\"}";
 
-        PutUpdate putUpdate= given()
+        NameJobModel putUpdate= given()
                 .spec(requestSpec)
                 .body(body)
                 .when()
                 .put("/users/2")
                 .then()
                 .spec(responseSpec(200))
-                .extract().as(PutUpdate.class);
+                .extract().as(NameJobModel.class);
                 //.body("name", is("akodele"))
                 //.body("job", is("QA engineer"));
         Assertions.assertEquals("akodele",putUpdate.getName());
