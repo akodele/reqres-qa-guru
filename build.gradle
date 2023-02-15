@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'io.qameta.allure' version '2.10.0'
     id "io.freefair.lombok" version "6.0.0-m2"
 }
 
@@ -10,11 +11,26 @@ repositories {
     mavenCentral()
 }
 
+allure {
+    report {
+        version.set('2.19.0')
+    }
+    adapter {
+        aspectjWeaver.set(true)
+        frameworks {
+            junit5 {
+                adapterVersion.set('2.19.0')
+            }
+        }
+    }
+}
+
 dependencies {
     implementation 'org.projectlombok:lombok:1.18.20'
     testImplementation(
             "org.junit.jupiter:junit-jupiter-api:5.8.1",
             'com.codeborne:selenide:6.9.0',
+            "io.qameta.allure:allure-rest-assured:2.19.0",
             "io.rest-assured:rest-assured:5.3.0",
             'org.aeonbits.owner:owner:1.0.12',
             "com.fasterxml.jackson.core:jackson-databind:2.11.2"
@@ -22,6 +38,14 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.1"
 }
 
-test {
+tasks.withType(Test) {
+    systemProperties(System.getProperties())
     useJUnitPlatform()
+
+    testLogging {
+        lifecycle {
+            events "started", "skipped", "failed", "standard_error", "standard_out"
+            exceptionFormat "short"
+        }
+    }
 }
